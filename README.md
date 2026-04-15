@@ -1,136 +1,162 @@
-# PSP Practica CRUD (Base Front + Back)
+## 1. Contexto del modulo
+El Equipo 1 es responsable del modulo **Registro de usuario** dentro de la practica PSP sobre una aplicación CRUD
 
-Proyecto base para practica de equipos con metodologia PSP.
-Incluye backend en FastAPI, frontend en React (Vite) y SQLite con datos semilla.
+## 2. Objetivo general
+Implementar y validar el flujo de registro para que un usuario nuevo pueda crear su cuenta desde la vista de Registro y persistirla en base de datos, mostrando mensajes claros de éxito o error.
 
-## Tematica actual
+## 3. Alcance del Equipo 1
 
-La base maneja un catalogo de suplementos alimenticios (usuarios + productos).
-Esto permite separar modulos de practica por equipo:
+### Incluye
+- Vista de registro en frontend.
+- Consumo del endpoint de registro.
+- Validaciones minimas de formulario (cliente).
+- Mensajes de error/exito legibles para usuario.
 
-- Registro
-- Inicio de sesion
-- Usuario
-- C - Crear producto
-- R - Mostrar productos
-- U - Editar producto
-- D - Eliminar producto
-- Dashboard
+## 4. Estado base del proyecto (punto de partida)
+Actualmente ya existe:
+- Endpoint de registro: `POST /api/auth/register`.
+- Esquema de entrada de usuario (`full_name`, `email`, `password`).
+- Pagina de registro en frontend.
+- Cliente API con metodo `register`.
 
-## Estructura
+El equipo debe tomar esta base y mejorarla para que el flujo quede completo y estable.
 
-```text
-backend/
-  app/
-    core/config.py
-    db.py
-    models.py
-    schemas.py
-    crud.py
-    seed.py
-    routers/
-      auth.py
-      users.py
-      products.py
-      dashboard.py
-    main.py
-  requirements.txt
-frontend/
-  src/
-    api/client.js
-    components/
-    pages/
-    App.jsx
-    main.jsx
-    styles.css
+## 4.1 End-point relacionado al Equipo 1 (unico)
+
+Para este documento del Equipo 1, solo se considera el end-point de Registro:
+
+| Modulo | Metodo | Ruta | Ubicacion | Campo | Tipo | Requerido | Regla | Descripcion |
+|---|---|---|---|---|---|---|---|---|
+| Auth/Registro | POST | /api/auth/register | Body | full_name | string | Si | Min 2, max 120 caracteres | Nombre completo del usuario |
+| Auth/Registro | POST | /api/auth/register | Body | email | email | Si | Formato de correo valido | Correo unico de la cuenta |
+| Auth/Registro | POST | /api/auth/register | Body | password | string | Si | Min 6, max 128 caracteres | Contrasena en texto plano para alta |
+
+No forman parte del alcance de este equipo: login, logout, usuarios, productos ni dashboard.
+
+## 5. Archivos clave para trabajar
+
+### Backend
+- `backend/app/routers/auth.py`
+- `backend/app/crud.py`
+- `backend/app/schemas.py`
+
+### Frontend
+- `frontend/src/pages/RegistrarsePage.jsx`
+- `frontend/src/api/client.js`
+- `frontend/src/App.jsx`
+
+## 6. Requerimientos funcionales obligatorios
+1. El formulario de registro debe pedir:
+   - Nombre completo.
+   - Correo.
+   - Contrasena.
+2. Si los datos son validos, debe crear usuario y mostrar confirmacion.
+3. Si el correo ya existe, debe mostrar error entendible para usuario final.
+
+## 7) Requerimientos tecnicos minimos
+1. Mantener compatibilidad con el contrato actual del endpoint (`/api/auth/register`).
+2. Respetar estilo del proyecto (componentes funcionales, fetch en cliente API, Pydantic/FastAPI en backend).
+3. Evitar romper rutas ya existentes en frontend.
+
+## 8) Flujo PSP sugerido para el equipo
+
+### Fase 1 - Planificacion
+- Revisar alcance y dividir tareas internas (UI, validaciones, integracion, pruebas).
+- Estimar tiempo por tarea.
+
+### Fase 2 - Diseño
+- Definir comportamiento del formulario en casos:
+	- exito,
+	- correo duplicado,
+	- error inesperado de red/servidor.
+
+### Fase 3 - Desarrollo
+- Implementar mejoras de validacion y UX en la pagina de registro.
+- Ajustar manejo de errores en cliente API solo si es necesario.
+- Verificar consistencia de payload con backend.
+
+### Fase 4 - Pruebas
+- Ejecutar pruebas manuales guiadas por checklist.
+- Registrar defectos detectados y correcciones aplicadas.
+
+### Fase 5 - Postmortem PSP
+- Comparar tiempo estimado vs real.
+- Documentar causas de desviaciones.
+- Listar lecciones aprendidas para el siguiente modulo.
+
+## 9) Checklist de pruebas manuales
+1. Registro exitoso con datos validos.
+2. Registro rechazado por correo repetido.
+3. Error por correo invalido.
+4. Error por contrasena demasiado corta.
+5. Verificacion de limpieza del formulario tras exito.
+6. Verificacion de mensaje de error cuando API no responde.
+
+## 10) Entregables del Equipo 1
+1. Codigo funcional del modulo de Registro (frontend y ajustes backend si aplican).
+2. Evidencia de pruebas manuales (capturas o bitacora de casos).
+3. Resumen PSP breve:
+   - plan inicial,
+   - tiempo real invertido,
+   - defectos encontrados,
+   - acciones correctivas.
+
+## 11) Criterios de aceptacion
+- Los errores son perceptibles y comprensibles.
+- El codigo queda legible y mantenible.
+- La evidencia PSP y de pruebas esta completa.
+
+## 12) Formato Esperado/Ideal
+
+### Request ideal (registro)
+
+```json
+{
+   "full_name": "Ana Perez",
+   "email": "ana.perez@correo.com",
+   "password": "ClaveSegura123"
+}
 ```
 
-## Requisitos
+### Response ideal - exito (201)
 
-- Python 3.11+ (recomendado)
-- Node.js 18+ y npm
-
-## Ejecucion completa (manual)
-
-Este proyecto funciona sin archivo .env.
-La configuracion principal esta en backend/app/core/config.py.
-
-### 1) Levantar backend
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+```json
+{
+   "id": 10,
+   "full_name": "Ana Perez",
+   "email": "ana.perez@correo.com",
+   "created_at": "2026-04-15T18:20:00"
+}
 ```
 
-### 2) Levantar frontend
+### Response esperada - correo duplicado (409)
 
-En otra terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
+```json
+{
+   "detail": "El email ya esta registrado."
+}
 ```
 
-URLs locales:
+### Response esperada - error de validacion (422)
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Docs API (Swagger): http://localhost:8000/docs
+```json
+{
+   "detail": [
+      {
+         "type": "string_too_short",
+         "loc": ["body", "password"],
+         "msg": "String should have at least 6 characters",
+         "input": "123",
+         "ctx": {"min_length": 6}
+      }
+   ]
+}
+```
 
-## Datos semilla (SQLite)
+### Criterios de formato ideal
 
-Al arrancar el backend se crean tablas y datos iniciales automaticamente.
+- Enviar siempre `Content-Type: application/json`.
+- `full_name` no debe enviarse vacio ni con menos de 2 caracteres.
+- `email` debe ser valido y no repetido.
+- `password` debe tener al menos 6 caracteres.
 
-Usuarios iniciales (5):
-
-- admin@pspdemo.com / admin123
-- ana@pspdemo.com / equipo123
-- carlos@pspdemo.com / suplemento123
-- daniela@pspdemo.com / energia123
-- erick@pspdemo.com / proteina123
-
-Productos iniciales: 10 productos del rubro suplementos alimenticios.
-
-Nota importante sobre seed:
-
-- El seed solo corre si la tabla users esta vacia.
-- Si ya tenias datos, no se volveran a insertar automaticamente.
-
-## Endpoints principales (backend)
-
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/users
-- GET /api/users/{user_id}
-- POST /api/products
-- GET /api/products
-- GET /api/products/{product_id}
-- PUT /api/products/{product_id}
-- DELETE /api/products/{product_id}
-- GET /api/dashboard/summary
-
-## Estado de logout
-
-- El endpoint de backend para cierre de sesion fue eliminado.
-- Si en frontend se usa la ruta /logout, actualmente apuntara a una llamada no disponible en API.
-
-## Bugs intencionales (practica PSP)
-
-La base deja errores visibles para que los equipos los detecten y corrijan:
-
-1. BUG-LOGIN-001: Login no bloquea contrasena incorrecta si el correo existe.
-2. BUG-USER-001: GET /users/{id} expone password_hash.
-3. BUG-CREATE-001: Crear producto trunca precio a entero.
-4. BUG-UPDATE-001: Editar producto ignora el campo stock.
-5. BUG-DELETE-001: Delete hace borrado logico, no fisico, pero responde como eliminado.
-6. BUG-DASH-001: Dashboard reporta products_total incorrecto.
-
-## Recomendacion de trabajo por equipos
-
-- Cada equipo trabaja su modulo en su rama.
-- No se aplica autenticacion real en endpoints para evitar bloqueo entre equipos.
-- Cada equipo puede iterar su vista sin romper rutas compartidas.
