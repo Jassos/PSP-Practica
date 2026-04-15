@@ -1,136 +1,202 @@
-# PSP Practica CRUD (Base Front + Back)
+## 1. Contexto del modulo
+El Equipo 5 es responsable del modulo **Agregar Producto** dentro de la practica PSP sobre una aplicacion CRUD.
 
-Proyecto base para practica de equipos con metodologia PSP.
-Incluye backend en FastAPI, frontend en React (Vite) y SQLite con datos semilla.
+## 2. Objetivo general
+Implementar y validar el flujo de creacion de productos para que un usuario pueda llenar el formulario, enviarlo al backend y recibir confirmacion clara de exito, error de validacion o error de servidor. El equipo tambien debe detectar y documentar el bug intencional PSP presente en este endpoint.
 
-## Tematica actual
+## 3. Alcance del Equipo 5
 
-La base maneja un catalogo de suplementos alimenticios (usuarios + productos).
-Esto permite separar modulos de practica por equipo:
+### Incluye
+- Vista de formulario de creacion en frontend (`AgregarPage.jsx`).
+- Consumo del endpoint de creacion de producto.
+- Validaciones minimas de formulario en el cliente.
+- Manejo y visualizacion del campo `psp_warning` en la respuesta del backend.
+- Mensajes de exito, error de validacion y error inesperado legibles para el usuario.
 
-- Registro
-- Inicio de sesion
-- Usuario
-- C - Crear producto
-- R - Mostrar productos
-- U - Editar producto
-- D - Eliminar producto
-- Dashboard
+### No incluye
+- Editar ni eliminar productos existentes.
+- Autenticacion ni sesion.
+- Subida de imagenes u otros campos fuera del schema actual.
 
-## Estructura
+## 4. Estado base del proyecto (punto de partida)
+Actualmente ya existe:
+- Endpoint de creacion: `POST /api/products`.
+- Esquema de entrada `ProductCreate` con campos `name`, `description`, `price` y `stock`.
+- Esquema de respuesta `ProductMutationResponse` que incluye `product` y `psp_warning`.
+- Pagina `AgregarPage.jsx` con estructura base y comentarios guia.
+- Cliente API con metodo `createProduct(data)`.
 
-```text
-backend/
-  app/
-    core/config.py
-    db.py
-    models.py
-    schemas.py
-    crud.py
-    seed.py
-    routers/
-      auth.py
-      users.py
-      products.py
-      dashboard.py
-    main.py
-  requirements.txt
-frontend/
-  src/
-    api/client.js
-    components/
-    pages/
-    App.jsx
-    main.jsx
-    styles.css
+El equipo debe tomar esta base y desarrollar el formulario funcional dentro del bloque `<section className="visual-slot">`.
+
+## 4.1 Bug intencional PSP — BUG-CREATE-001
+El router de productos contiene un bug intencional en el endpoint de creacion:
+
+> **BUG-CREATE-001:** El precio (`price`) se trunca a entero al momento de guardar.
+> Por ejemplo, enviar `price: 19.99` resulta en que el producto queda con `price: 19`.
+
+El backend devuelve el campo `psp_warning` en la respuesta cuando ocurre este bug.
+El equipo **debe detectar este comportamiento** y mostrar la advertencia al usuario de forma visible.
+
+## 4.2 End-points relacionados al Equipo 5
+
+| Modulo | Metodo | Ruta | Ubicacion | Campo | Tipo | Requerido | Regla | Descripcion |
+|---|---|---|---|---|---|---|---|---|
+| Productos/Crear | POST | /api/products | Body | name | string | Si | Min 2, max 120 caracteres | Nombre del producto |
+| Productos/Crear | POST | /api/products | Body | description | string | No | Max 500 caracteres, default "" | Descripcion del producto |
+| Productos/Crear | POST | /api/products | Body | price | float | Si | Mayor a 0 | Precio unitario |
+| Productos/Crear | POST | /api/products | Body | stock | integer | Si | Min 0, max 10000 | Unidades disponibles |
+
+No forman parte del alcance de este equipo: listar, editar o eliminar productos, auth ni dashboard.
+
+## 5. Archivos clave para trabajar
+
+### Backend (solo lectura, no modificar)
+- `backend/app/routers/products.py` — endpoint `POST /products`
+- `backend/app/schemas.py` — esquemas `ProductCreate` y `ProductMutationResponse`
+- `backend/app/crud.py` — funcion `create_product`
+
+### Frontend
+- `frontend/src/pages/AgregarPage.jsx`
+- `frontend/src/api/client.js`
+- `frontend/src/App.jsx` — ruta: `/productos/crear`
+
+## 6. Requerimientos funcionales obligatorios
+1. El formulario debe pedir: **Nombre**, **Descripcion** (opcional), **Precio** y **Stock**.
+2. Si los datos son validos, debe crear el producto y mostrar mensaje de confirmacion con el ID asignado.
+3. Si la respuesta incluye `psp_warning`, debe mostrarse como una alerta visible e identificable.
+4. Si hay error de validacion del backend (422), debe mostrarse el mensaje de campo especifico.
+5. Si hay error inesperado de red o servidor, debe mostrarse un mensaje generico comprensible.
+
+## 7. Requerimientos tecnicos minimos
+1. Mantener compatibilidad con el contrato actual del endpoint (`/api/products`).
+2. Enviar siempre `Content-Type: application/json` (ya manejado por el cliente API).
+3. Respetar estilo del proyecto: componentes funcionales React, fetch a traves del cliente API (`api.createProduct`).
+4. No romper rutas ya existentes en `App.jsx`.
+5. El campo `price` debe enviarse como numero (`float`), no como string.
+
+## 8. Flujo PSP sugerido para el equipo
+
+### Fase 1 - Planificacion
+- Revisar alcance y dividir tareas internas: estructura del formulario, validaciones, integracion, pruebas.
+- Estimar tiempo por tarea.
+
+### Fase 2 - Diseño
+- Definir comportamiento del formulario en los casos:
+  - exito con y sin `psp_warning`,
+  - error de validacion de campo,
+  - producto con precio decimal (para detectar BUG-CREATE-001),
+  - error inesperado de red/servidor.
+
+### Fase 3 - Desarrollo
+- Implementar el formulario con sus campos y controles de estado.
+- Agregar validaciones minimas en cliente antes de enviar.
+- Mostrar respuesta del backend: exito, warning PSP y errores.
+- Verificar que `price` se envia como numero y que `description` permite enviarse vacio.
+
+### Fase 4 - Pruebas
+- Ejecutar pruebas manuales guiadas por checklist.
+- Registrar defectos detectados (incluido BUG-CREATE-001) y correcciones aplicadas.
+
+### Fase 5 - Postmortem PSP
+- Comparar tiempo estimado vs real.
+- Documentar causas de desviaciones.
+- Listar lecciones aprendidas para el siguiente modulo.
+
+## 9. Checklist de pruebas manuales
+1. Creacion exitosa con todos los campos validos.
+2. Creacion exitosa con descripcion vacia (campo opcional).
+3. Creacion con precio decimal (ej. 19.99) → verificar BUG-CREATE-001 en la respuesta y mostrar `psp_warning`.
+4. Error de validacion por nombre demasiado corto (menos de 2 caracteres).
+5. Error de validacion por precio igual a 0 o negativo.
+6. Error de validacion por stock mayor a 10000.
+7. Verificacion de limpieza o deshabilitacion del formulario tras envio exitoso.
+8. Verificacion de mensaje de error cuando la API no responde.
+
+## 10. Entregables del Equipo 5
+1. Codigo funcional de `AgregarPage.jsx` con formulario, validaciones y manejo de `psp_warning`.
+2. Evidencia de pruebas manuales (capturas o bitacora de casos), incluyendo la deteccion de BUG-CREATE-001.
+3. Resumen PSP breve:
+   - plan inicial,
+   - tiempo real invertido,
+   - defectos encontrados,
+   - acciones correctivas.
+
+## 11. Criterios de aceptacion
+- El formulario crea productos correctamente y muestra confirmacion con ID.
+- El campo `psp_warning` se renderiza de forma visible cuando el backend lo devuelve.
+- Los errores de validacion son perceptibles y comprensibles.
+- El codigo queda legible y mantenible.
+- La evidencia PSP y de pruebas esta completa, incluyendo la observacion del bug intencional.
+
+## 12. Formato esperado/ideal
+
+### Request ideal (crear producto)
+
+```json
+{
+  "name": "Creatina Monohidratada",
+  "description": "Suplemento para rendimiento muscular.",
+  "price": 19.99,
+  "stock": 50
+}
 ```
 
-## Requisitos
+### Response ideal — exito (201) sin bug
 
-- Python 3.11+ (recomendado)
-- Node.js 18+ y npm
-
-## Ejecucion completa (manual)
-
-Este proyecto funciona sin archivo .env.
-La configuracion principal esta en backend/app/core/config.py.
-
-### 1) Levantar backend
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+```json
+{
+  "product": {
+    "id": 5,
+    "name": "Creatina Monohidratada",
+    "description": "Suplemento para rendimiento muscular.",
+    "price": 19.99,
+    "stock": 50,
+    "is_active": true,
+    "created_at": "2026-04-15T18:20:00",
+    "updated_at": "2026-04-15T18:20:00"
+  },
+  "psp_warning": null
+}
 ```
 
-### 2) Levantar frontend
+### Response real — exito (201) con BUG-CREATE-001
 
-En otra terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
+```json
+{
+  "product": {
+    "id": 5,
+    "name": "Creatina Monohidratada",
+    "description": "Suplemento para rendimiento muscular.",
+    "price": 19,
+    "stock": 50,
+    "is_active": true,
+    "created_at": "2026-04-15T18:20:00",
+    "updated_at": "2026-04-15T18:20:00"
+  },
+  "psp_warning": "BUG-CREATE-001: El precio se trunca a entero al guardar. Fallo de logica intencional."
+}
 ```
 
-URLs locales:
+### Response esperada — error de validacion (422)
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Docs API (Swagger): http://localhost:8000/docs
+```json
+{
+  "detail": [
+    {
+      "type": "greater_than",
+      "loc": ["body", "price"],
+      "msg": "Input should be greater than 0",
+      "input": 0,
+      "ctx": { "gt": 0 }
+    }
+  ]
+}
+```
 
-## Datos semilla (SQLite)
+### Criterios de formato ideal
 
-Al arrancar el backend se crean tablas y datos iniciales automaticamente.
-
-Usuarios iniciales (5):
-
-- admin@pspdemo.com / admin123
-- ana@pspdemo.com / equipo123
-- carlos@pspdemo.com / suplemento123
-- daniela@pspdemo.com / energia123
-- erick@pspdemo.com / proteina123
-
-Productos iniciales: 10 productos del rubro suplementos alimenticios.
-
-Nota importante sobre seed:
-
-- El seed solo corre si la tabla users esta vacia.
-- Si ya tenias datos, no se volveran a insertar automaticamente.
-
-## Endpoints principales (backend)
-
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/users
-- GET /api/users/{user_id}
-- POST /api/products
-- GET /api/products
-- GET /api/products/{product_id}
-- PUT /api/products/{product_id}
-- DELETE /api/products/{product_id}
-- GET /api/dashboard/summary
-
-## Estado de logout
-
-- El endpoint de backend para cierre de sesion fue eliminado.
-- Si en frontend se usa la ruta /logout, actualmente apuntara a una llamada no disponible en API.
-
-## Bugs intencionales (practica PSP)
-
-La base deja errores visibles para que los equipos los detecten y corrijan:
-
-1. BUG-LOGIN-001: Login no bloquea contrasena incorrecta si el correo existe.
-2. BUG-USER-001: GET /users/{id} expone password_hash.
-3. BUG-CREATE-001: Crear producto trunca precio a entero.
-4. BUG-UPDATE-001: Editar producto ignora el campo stock.
-5. BUG-DELETE-001: Delete hace borrado logico, no fisico, pero responde como eliminado.
-6. BUG-DASH-001: Dashboard reporta products_total incorrecto.
-
-## Recomendacion de trabajo por equipos
-
-- Cada equipo trabaja su modulo en su rama.
-- No se aplica autenticacion real en endpoints para evitar bloqueo entre equipos.
-- Cada equipo puede iterar su vista sin romper rutas compartidas.
+- `name` no debe enviarse vacio ni con menos de 2 caracteres.
+- `price` debe enviarse como numero flotante mayor a 0 (no como string).
+- `stock` debe enviarse como entero entre 0 y 10000.
+- `description` puede omitirse o enviarse como string vacio.
+- Si `psp_warning` no es null, debe mostrarse como alerta en la interfaz.
