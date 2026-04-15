@@ -20,6 +20,10 @@ En Base al número de equipo, sera la rama correspondiente a su actividad a desa
 8. KANBAN GABRIEL
 9. DDC JENNIFER
 
+### Prototipo del Proyecto
+Puedes consultar el prototipo y los componentes en el siguiente enlace:
+[Ver diseño en Figma](https://www.figma.com/design/xdCC2idZrvNS4JmwVHwux3/PSP-M%C3%A9tricas?node-id=0-1&t=nz9cnuCoYsKwOoDS-1)
+
 ## Estructura
 
 ```text
