@@ -1,136 +1,169 @@
-# PSP Practica CRUD (Base Front + Back)
+## 1. Contexto del modulo
+El Equipo 4 es responsable del modulo **Pagina de Productos** dentro de la practica PSP sobre una aplicacion CRUD.
 
-Proyecto base para practica de equipos con metodologia PSP.
-Incluye backend en FastAPI, frontend en React (Vite) y SQLite con datos semilla.
+## 2. Objetivo general
+Implementar y validar la vista de listado de productos para que un usuario pueda consultar el catalogo completo, buscarlo por nombre y distinguir visualmente el estado y stock de cada producto.
 
-## Tematica actual
+## 3. Alcance del Equipo 4
 
-La base maneja un catalogo de suplementos alimenticios (usuarios + productos).
-Esto permite separar modulos de practica por equipo:
+### Incluye
+- Vista de listado de productos en frontend (`ProductosPage.jsx`).
+- Consumo del endpoint de listado con el parametro `include_inactive`.
+- Filtrado por nombre en el cliente (sin peticion adicional al backend).
+- Badges visuales de estado (Activo / Inactivo) y alerta de stock bajo.
+- Mensajes de estado vacío y error de API.
 
-- Registro
-- Inicio de sesion
-- Usuario
-- C - Crear producto
-- R - Mostrar productos
-- U - Editar producto
-- D - Eliminar producto
-- Dashboard
+### No incluye
+- Crear, editar ni eliminar productos.
+- Autenticacion ni sesion.
+- Paginacion (fuera del alcance de esta practica).
 
-## Estructura
+## 4. Estado base del proyecto (punto de partida)
+Actualmente ya existe:
+- Endpoint de listado: `GET /api/products`.
+- Esquema de respuesta (`ProductPublic`) con todos los campos necesarios.
+- Pagina `ProductosPage.jsx` con estructura base y comentarios guia.
+- Cliente API con metodo `listProducts(includeInactive)`.
 
-```text
-backend/
-  app/
-    core/config.py
-    db.py
-    models.py
-    schemas.py
-    crud.py
-    seed.py
-    routers/
-      auth.py
-      users.py
-      products.py
-      dashboard.py
-    main.py
-  requirements.txt
-frontend/
-  src/
-    api/client.js
-    components/
-    pages/
-    App.jsx
-    main.jsx
-    styles.css
+El equipo debe tomar esta base y desarrollar la interfaz funcional dentro del bloque `<section className="visual-slot">`.
+
+## 4.1 End-points relacionados al Equipo 4
+
+| Modulo | Metodo | Ruta | Ubicacion | Campo | Tipo | Requerido | Regla | Descripcion |
+|---|---|---|---|---|---|---|---|---|
+| Productos/Listado | GET | /api/products | Query | include_inactive | boolean | No | Default: true | Si es true retorna productos activos e inactivos |
+
+No forman parte del alcance de este equipo: crear, editar, eliminar productos, auth ni dashboard.
+
+## 5. Archivos clave para trabajar
+
+### Backend (solo lectura, no modificar)
+- `backend/app/routers/products.py` — endpoint `GET /products`
+- `backend/app/schemas.py` — esquema `ProductPublic`
+- `backend/app/crud.py` — funcion `list_products`
+
+### Frontend
+- `frontend/src/pages/ProductosPage.jsx`
+- `frontend/src/api/client.js`
+- `frontend/src/App.jsx` — ruta: `/productos/lista`
+
+## 6. Requerimientos funcionales obligatorios
+1. La vista debe mostrar una tabla con las columnas: **ID | NOMBRE | PRECIO | STOCK | ESTADO | ACTUALIZADO**.
+2. Incluir un campo de busqueda que filtre la tabla en tiempo real por nombre del producto.
+3. Los productos inactivos deben diferenciarse visualmente (badge rojo "Inactivo").
+4. El stock bajo (≤ 5 unidades) debe mostrarse con una alerta visual (badge o color distinto).
+5. Si la API falla, mostrar un mensaje de error legible.
+6. Si no hay coincidencias de busqueda, mostrar un estado vacio con mensaje descriptivo.
+
+## 7. Requerimientos tecnicos minimos
+1. Llamar al endpoint con `include_inactive=true` para mostrar todo el catalogo.
+2. El filtro de busqueda debe operar sobre los datos ya cargados en memoria (sin nueva peticion al backend).
+3. Mantener compatibilidad con el contrato actual del endpoint (`/api/products`).
+4. Respetar estilo del proyecto: componentes funcionales React, fetch a traves del cliente API (`api.listProducts`), sin librerias de UI externas.
+5. No romper rutas ya existentes en `App.jsx`.
+
+## 8. Flujo PSP sugerido para el equipo
+
+### Fase 1 - Planificacion
+- Revisar alcance y dividir tareas internas: estructura HTML/JSX, logica de filtrado, badges, integracion API.
+- Estimar tiempo por tarea.
+
+### Fase 2 - Diseño
+- Definir comportamiento en los casos:
+  - carga exitosa con productos,
+  - busqueda sin coincidencias,
+  - lista vacia desde API,
+  - error de red o servidor.
+
+### Fase 3 - Desarrollo
+- Implementar llamada al API y almacenar resultado en estado.
+- Construir tabla con formato de precio (USD) y fecha de actualizacion.
+- Agregar campo de busqueda y logica de filtrado.
+- Agregar badges de estado y stock.
+
+### Fase 4 - Pruebas
+- Ejecutar pruebas manuales guiadas por checklist.
+- Registrar defectos detectados y correcciones aplicadas.
+
+### Fase 5 - Postmortem PSP
+- Comparar tiempo estimado vs real.
+- Documentar causas de desviaciones.
+- Listar lecciones aprendidas para el siguiente modulo.
+
+## 9. Checklist de pruebas manuales
+1. La tabla carga y muestra productos al montar la vista.
+2. El filtro de busqueda reduce la tabla correctamente al escribir.
+3. Al borrar el texto de busqueda se restaura la lista completa.
+4. Los productos inactivos muestran el badge "Inactivo" en rojo.
+5. Los productos con stock ≤ 5 muestran la alerta visual de stock bajo.
+6. El precio se muestra con formato de moneda (ej. $9.99 USD).
+7. La fecha "Actualizado" se muestra en formato legible.
+8. Se muestra estado vacio cuando la busqueda no tiene resultados.
+9. Se muestra mensaje de error cuando la API no responde.
+
+## 10. Entregables del Equipo 4
+1. Codigo funcional de `ProductosPage.jsx` con tabla, filtro y badges.
+2. Evidencia de pruebas manuales (capturas o bitacora de casos).
+3. Resumen PSP breve:
+   - plan inicial,
+   - tiempo real invertido,
+   - defectos encontrados,
+   - acciones correctivas.
+
+## 11. Criterios de aceptacion
+- La tabla muestra todos los campos requeridos con formato correcto.
+- El filtro funciona sin recargar pagina ni volver a llamar al backend.
+- Los estados visuales (activo/inactivo, stock bajo) son claros y comprensibles.
+- El codigo queda legible y mantenible.
+- La evidencia PSP y de pruebas esta completa.
+
+## 12. Formato esperado/ideal
+
+### Response del listado — exito (200)
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Creatina Monohidratada",
+    "description": "Suplemento para rendimiento muscular.",
+    "price": 19.99,
+    "stock": 3,
+    "is_active": true,
+    "created_at": "2026-04-10T10:00:00",
+    "updated_at": "2026-04-14T15:30:00"
+  },
+  {
+    "id": 2,
+    "name": "Proteina Whey",
+    "description": "Proteina de suero de leche.",
+    "price": 35.00,
+    "stock": 20,
+    "is_active": false,
+    "created_at": "2026-04-11T08:00:00",
+    "updated_at": "2026-04-13T12:00:00"
+  }
+]
 ```
 
-## Requisitos
+### Response cuando no hay productos (200 lista vacia)
 
-- Python 3.11+ (recomendado)
-- Node.js 18+ y npm
-
-## Ejecucion completa (manual)
-
-Este proyecto funciona sin archivo .env.
-La configuracion principal esta en backend/app/core/config.py.
-
-### 1) Levantar backend
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+```json
+[]
 ```
 
-### 2) Levantar frontend
+### Response de error de servidor (500)
 
-En otra terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
+```json
+{
+  "detail": "Internal Server Error"
+}
 ```
 
-URLs locales:
+### Criterios de formato ideal
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Docs API (Swagger): http://localhost:8000/docs
-
-## Datos semilla (SQLite)
-
-Al arrancar el backend se crean tablas y datos iniciales automaticamente.
-
-Usuarios iniciales (5):
-
-- admin@pspdemo.com / admin123
-- ana@pspdemo.com / equipo123
-- carlos@pspdemo.com / suplemento123
-- daniela@pspdemo.com / energia123
-- erick@pspdemo.com / proteina123
-
-Productos iniciales: 10 productos del rubro suplementos alimenticios.
-
-Nota importante sobre seed:
-
-- El seed solo corre si la tabla users esta vacia.
-- Si ya tenias datos, no se volveran a insertar automaticamente.
-
-## Endpoints principales (backend)
-
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/users
-- GET /api/users/{user_id}
-- POST /api/products
-- GET /api/products
-- GET /api/products/{product_id}
-- PUT /api/products/{product_id}
-- DELETE /api/products/{product_id}
-- GET /api/dashboard/summary
-
-## Estado de logout
-
-- El endpoint de backend para cierre de sesion fue eliminado.
-- Si en frontend se usa la ruta /logout, actualmente apuntara a una llamada no disponible en API.
-
-## Bugs intencionales (practica PSP)
-
-La base deja errores visibles para que los equipos los detecten y corrijan:
-
-1. BUG-LOGIN-001: Login no bloquea contrasena incorrecta si el correo existe.
-2. BUG-USER-001: GET /users/{id} expone password_hash.
-3. BUG-CREATE-001: Crear producto trunca precio a entero.
-4. BUG-UPDATE-001: Editar producto ignora el campo stock.
-5. BUG-DELETE-001: Delete hace borrado logico, no fisico, pero responde como eliminado.
-6. BUG-DASH-001: Dashboard reporta products_total incorrecto.
-
-## Recomendacion de trabajo por equipos
-
-- Cada equipo trabaja su modulo en su rama.
-- No se aplica autenticacion real en endpoints para evitar bloqueo entre equipos.
-- Cada equipo puede iterar su vista sin romper rutas compartidas.
+- Siempre llamar con `include_inactive=true` para no perder productos del catalogo.
+- `price` debe formatearse como moneda: `$19.99 USD`.
+- `is_active: false` → badge "Inactivo" en rojo; `is_active: true` → badge "Activo" en oscuro.
+- `stock ≤ 5` → badge o texto de alerta visible (ej. "Stock bajo").
+- Fechas formateadas en español o formato legible (ej. `14/04/2026`).
