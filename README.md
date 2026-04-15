@@ -8,14 +8,17 @@ Incluye backend en FastAPI, frontend en React (Vite) y SQLite con datos semilla.
 La base maneja un catalogo de suplementos alimenticios (usuarios + productos).
 Esto permite separar modulos de practica por equipo:
 
-- Registro
-- Inicio de sesion
-- Usuario
-- C - Crear producto
-- R - Mostrar productos
-- U - Editar producto
-- D - Eliminar producto
-- Dashboard
+En Base al número de equipo, sera la rama correspondiente a su actividad a desarrollar.
+
+1. TSP ALAN ALEJANDRO
+2. SCRUM VILLEDO
+3. XP EDWIN
+4. DAS UBALDO
+5. DEVOPS JESUS ANDRE
+6. MLOPS JESUS ALEJANDRO
+7. LSD ERICK
+8. KANBAN GABRIEL
+9. DDC JENNIFER
 
 ## Estructura
 
