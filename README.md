@@ -1,136 +1,189 @@
-# PSP Practica CRUD (Base Front + Back)
+## 1. Contexto del modulo
+El Equipo 3 es responsable del modulo **Iniciar sesion (Login)** dentro de la practica PSP sobre una aplicacion CRUD.
 
-Proyecto base para practica de equipos con metodologia PSP.
-Incluye backend en FastAPI, frontend en React (Vite) y SQLite con datos semilla.
+## 2. Objetivo general
+Implementar y validar el flujo de login para que un usuario pueda autenticarse con correo y contrasena desde la vista de inicio de sesion, persistir la sesion local y navegar al dashboard con mensajes claros de exito o error.
 
-## Tematica actual
+## 3. Alcance del Equipo 3
 
-La base maneja un catalogo de suplementos alimenticios (usuarios + productos).
-Esto permite separar modulos de practica por equipo:
+### Incluye
+- Vista de iniciar sesion en frontend.
+- Consumo del endpoint de login.
+- Validaciones minimas de formulario (cliente).
+- Persistencia de sesion en `localStorage`.
+- Mensajes de error/exito legibles para usuario.
 
-- Registro
-- Inicio de sesion
-- Usuario
-- C - Crear producto
-- R - Mostrar productos
-- U - Editar producto
-- D - Eliminar producto
-- Dashboard
+## 4. Estado base del proyecto (punto de partida)
+Actualmente ya existe:
+- Endpoint de login: `POST /api/auth/login`.
+- Esquema de entrada de login (`email`, `password`).
+- Pagina de login en frontend.
+- Cliente API con metodo `login`.
+- Ruta frontend de acceso: `/login`.
 
-## Estructura
+El equipo debe tomar esta base y mejorarla para que el flujo quede completo y estable.
 
-```text
-backend/
-  app/
-    core/config.py
-    db.py
-    models.py
-    schemas.py
-    crud.py
-    seed.py
-    routers/
-      auth.py
-      users.py
-      products.py
-      dashboard.py
-    main.py
-  requirements.txt
-frontend/
-  src/
-    api/client.js
-    components/
-    pages/
-    App.jsx
-    main.jsx
-    styles.css
+## 4.1 End-point relacionado al Equipo 3 (unico)
+
+Para este documento del Equipo 3, solo se considera el end-point de Login:
+
+| Modulo | Metodo | Ruta | Ubicacion | Campo | Tipo | Requerido | Regla | Descripcion |
+|---|---|---|---|---|---|---|---|---|
+| Auth/Login | POST | /api/auth/login | Body | email | email | Si | Formato de correo valido | Correo de la cuenta |
+| Auth/Login | POST | /api/auth/login | Body | password | string | Si | Min 1, max 128 caracteres | Contrasena para autenticacion |
+
+No forman parte del alcance de este equipo: registro, logout, perfil, usuarios, productos ni dashboard.
+
+## 5. Archivos clave para trabajar
+
+### Backend
+- `backend/app/routers/auth.py`
+- `backend/app/schemas.py`
+- `backend/app/crud.py`
+
+### Frontend
+- `frontend/src/pages/IniciarSesionPage.jsx`
+- `frontend/src/api/client.js`
+- `frontend/src/App.jsx`
+
+## 6. Requerimientos funcionales obligatorios
+1. El formulario de inicio de sesion debe pedir:
+   - Correo.
+   - Contrasena.
+2. Si los datos son validos y el login es exitoso, debe:
+   - guardar la sesion (ej. `psp_session` en localStorage),
+   - navegar a `/dashboard`,
+   - mostrar confirmacion visual.
+3. Si el usuario no existe o hay error de red/servidor, debe mostrar error entendible.
+4. Si la API retorna `psp_warning`, la vista debe mostrar una alerta visible.
+
+## 7) Requerimientos tecnicos minimos
+1. Mantener compatibilidad con el contrato actual del endpoint (`/api/auth/login`).
+2. Respetar estilo del proyecto (componentes funcionales, fetch en cliente API, Pydantic/FastAPI en backend).
+3. Evitar romper rutas ya existentes en frontend.
+
+## 8) Flujo PSP sugerido para el equipo
+
+### Fase 1 - Planificacion
+- Revisar alcance y dividir tareas internas (UI, validaciones, integracion, pruebas).
+- Estimar tiempo por tarea.
+
+### Fase 2 - Diseño
+- Definir comportamiento del formulario en casos:
+  - exito,
+  - usuario no encontrado,
+  - warning PSP,
+  - error inesperado de red/servidor.
+
+### Fase 3 - Desarrollo
+- Implementar mejoras de validacion y UX en la pagina de login.
+- Ajustar manejo de errores en cliente API solo si es necesario.
+- Verificar consistencia de payload con backend.
+- Persistir sesion local y redirigir a dashboard.
+
+### Fase 4 - Pruebas
+- Ejecutar pruebas manuales guiadas por checklist.
+- Registrar defectos detectados y correcciones aplicadas.
+
+### Fase 5 - Postmortem PSP
+- Comparar tiempo estimado vs real.
+- Documentar causas de desviaciones.
+- Listar lecciones aprendidas para el siguiente modulo.
+
+## 9) Checklist de pruebas manuales
+1. Login exitoso con correo y contrasena validos.
+2. Login rechazado por usuario inexistente (404).
+3. Error por correo invalido (422).
+4. Error por contrasena vacia (422).
+5. Verificacion de guardado de sesion (`psp_session`) tras exito.
+6. Verificacion de navegacion a `/dashboard` tras exito.
+7. Verificacion de alerta cuando llega `psp_warning`.
+8. Verificacion de mensaje de error cuando API no responde.
+
+## 10) Entregables del Equipo 3
+1. Codigo funcional del modulo de Login (frontend y ajustes backend si aplican).
+2. Evidencia de pruebas manuales (capturas o bitacora de casos).
+3. Resumen PSP breve:
+   - plan inicial,
+   - tiempo real invertido,
+   - defectos encontrados,
+   - acciones correctivas.
+
+## 11) Criterios de aceptacion
+- El flujo de inicio de sesion funciona de punta a punta.
+- Los errores y warnings son perceptibles y comprensibles.
+- La sesion local se guarda correctamente en exito.
+- El codigo queda legible y mantenible.
+- La evidencia PSP y de pruebas esta completa.
+
+## 12) Formato Esperado/Ideal
+
+### Request ideal (login)
+
+```json
+{
+  "email": "ana.perez@correo.com",
+  "password": "ClaveSegura123"
+}
 ```
 
-## Requisitos
+### Response ideal - exito (200)
 
-- Python 3.11+ (recomendado)
-- Node.js 18+ y npm
-
-## Ejecucion completa (manual)
-
-Este proyecto funciona sin archivo .env.
-La configuracion principal esta en backend/app/core/config.py.
-
-### 1) Levantar backend
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+```json
+{
+  "access_token": "token-psp-10",
+  "token_type": "bearer",
+  "user": {
+    "id": 10,
+    "full_name": "Ana Perez",
+    "email": "ana.perez@correo.com",
+    "created_at": "2026-04-15T18:20:00"
+  }
+}
 ```
 
-### 2) Levantar frontend
+### Response esperada - warning PSP (200)
 
-En otra terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
+```json
+{
+  "access_token": "token-psp-10",
+  "token_type": "bearer",
+  "user": {
+    "id": 10,
+    "full_name": "Ana Perez",
+    "email": "ana.perez@correo.com",
+    "created_at": "2026-04-15T18:20:00"
+  },
+  "psp_warning": "BUG-LOGIN-001: La contrasena incorrecta no bloquea el acceso."
+}
 ```
 
-URLs locales:
+### Response esperada - usuario no encontrado (404)
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Docs API (Swagger): http://localhost:8000/docs
+```json
+{
+  "detail": "Usuario no encontrado."
+}
+```
 
-## Datos semilla (SQLite)
+### Response esperada - error de validacion (422)
 
-Al arrancar el backend se crean tablas y datos iniciales automaticamente.
+```json
+{
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": ["body", "email"],
+      "msg": "value is not a valid email address",
+      "input": "correo-invalido"
+    }
+  ]
+}
+```
 
-Usuarios iniciales (5):
+### Criterios de formato ideal
 
-- admin@pspdemo.com / admin123
-- ana@pspdemo.com / equipo123
-- carlos@pspdemo.com / suplemento123
-- daniela@pspdemo.com / energia123
-- erick@pspdemo.com / proteina123
-
-Productos iniciales: 10 productos del rubro suplementos alimenticios.
-
-Nota importante sobre seed:
-
-- El seed solo corre si la tabla users esta vacia.
-- Si ya tenias datos, no se volveran a insertar automaticamente.
-
-## Endpoints principales (backend)
-
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/users
-- GET /api/users/{user_id}
-- POST /api/products
-- GET /api/products
-- GET /api/products/{product_id}
-- PUT /api/products/{product_id}
-- DELETE /api/products/{product_id}
-- GET /api/dashboard/summary
-
-## Estado de logout
-
-- El endpoint de backend para cierre de sesion fue eliminado.
-- Si en frontend se usa la ruta /logout, actualmente apuntara a una llamada no disponible en API.
-
-## Bugs intencionales (practica PSP)
-
-La base deja errores visibles para que los equipos los detecten y corrijan:
-
-1. BUG-LOGIN-001: Login no bloquea contrasena incorrecta si el correo existe.
-2. BUG-USER-001: GET /users/{id} expone password_hash.
-3. BUG-CREATE-001: Crear producto trunca precio a entero.
-4. BUG-UPDATE-001: Editar producto ignora el campo stock.
-5. BUG-DELETE-001: Delete hace borrado logico, no fisico, pero responde como eliminado.
-6. BUG-DASH-001: Dashboard reporta products_total incorrecto.
-
-## Recomendacion de trabajo por equipos
-
-- Cada equipo trabaja su modulo en su rama.
-- No se aplica autenticacion real en endpoints para evitar bloqueo entre equipos.
-- Cada equipo puede iterar su vista sin romper rutas compartidas.
+- Enviar siempre `Content-Type: application/json`.
+- `email` debe ser valido.
+- `password` no debe enviarse vacia.
+- Guardar la respuesta de login en `localStorage` cuando el estado sea exitoso.
