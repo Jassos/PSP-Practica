@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+backend/psp_practica.db
+
+frontend/node_modules/
+frontend/dist/
+
