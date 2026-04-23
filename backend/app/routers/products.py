@@ -76,7 +76,6 @@ def delete_product(product_id: int, db: Session = Depends(get_db)) -> schemas.AP
     # PSP BUG: solo lo desactiva, no lo elimina realmente.(Corregido)
     db.add(product)
     db.commit()
-
     return schemas.APIMessage(  
         message=f"Producto {product_id} eliminado correctamente."
     )
