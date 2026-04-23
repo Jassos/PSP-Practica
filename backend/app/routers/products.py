@@ -51,20 +51,9 @@ def update_product(
 
     updates = payload.model_dump(exclude_unset=True)
 
-    # PSP BUG: no permite modificar stock aunque el campo sea enviado.
-    stock_received = "stock" in updates
-    updates.pop("stock", None)
-
     updated = crud.update_product(db, product, schemas.ProductUpdate(**updates))
 
-    warning = None
-    if stock_received:
-        warning = (
-            "BUG-UPDATE-001: El campo stock se ignora durante la edicion. "
-            "Fallo intencional para la practica."
-        )
-
-    return schemas.ProductMutationResponse(product=updated, psp_warning=warning)
+    return schemas.ProductMutationResponse(product=updated, psp_warning=None)
 
 
 @router.delete("/{product_id}", response_model=schemas.APIMessage)
