@@ -34,7 +34,6 @@
  * - Construir toda la maqueta dentro de <section className="visual-slot">.
  * - Incluir: barra de búsqueda, tabla de catálogo y badges de stock/estado.
  */
-import { useState } from "react";
 
 /**
  * PRODUCTOS
@@ -46,23 +45,23 @@ import { useState } from "react";
  * TODO: Reemplazar MOCK_PRODUCTS con la llamada real al API cuando se integre.
  */
 
-const MOCK_PRODUCTS = [
-  { id: 1, name: "Creatina Monohidratada", price: 18.5,  stock: 3,  is_active: true,  updated_at: "2026-04-06T00:00:00" },
-  { id: 2, name: "Pre-workout C4 Original", price: 35.0,  stock: 0,  is_active: true,  updated_at: "2026-04-06T00:00:00" },
-  { id: 3, name: "BCAA Complex 2:1:1",      price: 22.99, stock: 45, is_active: true,  updated_at: "2026-04-07T00:00:00" },
-  { id: 4, name: "Vitamina D3 + K2",        price: 12.0,  stock: 2,  is_active: true,  updated_at: "2026-04-08T00:00:00" },
-  { id: 5, name: "Omega 3 Fish Oil",        price: 15.75, stock: 89, is_active: false, updated_at: "2026-04-01T00:00:00" },
-  { id: 6, name: "Glutamina Pure",          price: 28.0,  stock: 15, is_active: true,  updated_at: "2026-04-09T00:00:00" },
-  { id: 7, name: "Magnesio Quelado",        price: 19.99, stock: 4,  is_active: false, updated_at: "2026-04-10T00:00:00" },
-];
+import { useEffect, useState } from "react";
+
+import { api } from "../api/client";
+
+/**
+ * PRODUCTOS
+ * GET /api/products?include_inactive=true
+ * Esquema de respuesta: ProductPublic[]
+ * { id, name, description, price, stock, is_active, created_at, updated_at }
+ */
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(price);
 }
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return d.toISOString().slice(0, 10); // 2026-04-06
+  return new Date(dateStr).toISOString().slice(0, 10);
 }
 
 function StockBadge({ stock }) {
@@ -75,7 +74,6 @@ function StockBadge({ stock }) {
     fontWeight: 600,
     background: isLow ? "#f5a623" : "transparent",
     color: isLow ? "#fff" : "#374151",
-    border: isLow ? "none" : "none",
   };
   return <span style={style}>{stock} un.</span>;
 }
@@ -94,9 +92,21 @@ function EstadoBadge({ isActive }) {
 }
 
 export function ProductosPage() {
-  const [search, setSearch] = useState("");
+  const [products, setProducts] = useState([]);
+  const [search, setSearch]     = useState("");
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
 
-  const products = MOCK_PRODUCTS; // TODO: reemplazar con estado real del API
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    api
+      .listProducts(true) // include_inactive=true → trae activos e inactivos
+      .then((data) => setProducts(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -132,13 +142,29 @@ export function ProductosPage() {
         }}
       />
 
-      {/* Tabla */}
+      {/* Estados: cargando / error / tabla */}
       <section className="visual-slot">
-        {filtered.length === 0 ? (
+        {loading && (
           <p style={{ color: "var(--ink-soft)", textAlign: "center", padding: "2rem 0" }}>
-            No se encontraron productos con ese nombre.
+            Cargando productos...
           </p>
-        ) : (
+        )}
+
+        {!loading && error && (
+          <p className="notice-error" style={{ padding: "1rem 0" }}>
+            Error al cargar productos: {error}
+          </p>
+        )}
+
+        {!loading && !error && filtered.length === 0 && (
+          <p style={{ color: "var(--ink-soft)", textAlign: "center", padding: "2rem 0" }}>
+            {search
+              ? `No se encontraron productos con "${search}".`
+              : "No hay productos registrados."}
+          </p>
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
           <table>
             <thead>
               <tr>
@@ -203,4 +229,5 @@ export function ProductosPage() {
     </main>
   );
 }
+
 
