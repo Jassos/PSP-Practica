@@ -200,3 +200,5 @@ No forman parte del alcance de este equipo: listar, editar o eliminar productos,
 - `stock` debe enviarse como entero entre 0 y 10000.
 - `description` puede omitirse o enviarse como string vacio.
 - Si `psp_warning` no es null, debe mostrarse como alerta en la interfaz.
+
+
