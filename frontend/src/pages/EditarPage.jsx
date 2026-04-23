@@ -56,13 +56,79 @@
  * - Construir toda la maqueta dentro de <section className="visual-slot">.
  * - Incluir: buscador por ID, formulario completo, alerta de bug PSP y footer de acciones.
  */
+import { useState } from "react";
+import { api } from "../api/client";
+import { ApiNotice } from "../components/ApiNotice";
+
+/* Consumo del endpoint */
 export function EditarPage() {
-  return (
-    <main className="panel">
-      <h2>Editar</h2>
-      <section className="visual-slot">
-        <p>TODO: Aquí va la interfaz visual (HTML/JSX) para editar productos.</p>
-      </section>
-    </main>
-  );
+  const [productId, setProductId] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [loadingLoad, setLoadingLoad] = useState(false);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [message, setMessage] = useState("");
+  const [warning, setWarning] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleLoad(event) {
+    event.preventDefault();
+    setLoadingLoad(true);
+    setError("");
+    setWarning("");
+    setMessage("");
+
+    try {
+      const product = await api.getProduct(productId);
+      setName(product.name ?? "");
+      setDescription(product.description ?? "");
+      setPrice(product.price ?? "");
+      setStock(product.stock ?? "");
+      setIsActive(Boolean(product.is_active));
+      setMessage("Producto cargado");
+    } catch (loadError) {
+      const message = loadError?.message ?? "Error inesperado en la API";
+      if (message.includes("404")) {
+        setError("Producto no encontrado");
+      } else {
+        setError(message);
+      }
+    } finally {
+      setLoadingLoad(false);
+    }
+  }
+
+  async function handleUpdate(event) {
+    event.preventDefault();
+    setLoadingUpdate(true);
+    setError("");
+    setWarning("");
+    setMessage("");
+
+    try {
+      const response = await api.updateProduct(productId, {
+        name,
+        description,
+        price: Number(price),
+        stock: Number(stock),
+        is_active: isActive
+      });
+      setMessage("Producto actualizado");
+      setWarning(response.psp_warning ?? "");
+      if (response.product) {
+        setName(response.product.name ?? "");
+        setDescription(response.product.description ?? "");
+        setPrice(response.product.price ?? "");
+        setStock(response.product.stock ?? "");
+        setIsActive(Boolean(response.product.is_active));
+      }
+    } catch (updateError) {
+      setError(updateError?.message ?? "Error inesperado en la API");
+    } finally {
+      setLoadingUpdate(false);
+    }
+  }
 }
