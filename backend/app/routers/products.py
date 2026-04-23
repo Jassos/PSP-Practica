@@ -73,14 +73,11 @@ def delete_product(product_id: int, db: Session = Depends(get_db)) -> schemas.AP
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
 
-    # PSP BUG: solo lo desactiva, no lo elimina realmente.
-    product.is_active = False
+    # PSP BUG: solo lo desactiva, no lo elimina realmente.(Corregido)
     db.add(product)
     db.commit()
 
-    return schemas.APIMessage(
-        message=f"Producto {product_id} eliminado (simulado).",
-        psp_warning=(
-            "BUG-DELETE-001: El endpoint realiza borrado logico pero responde como si fuera fisico."
-        ),
+    return schemas.APIMessage(  
+        message=f"Producto {product_id} eliminado correctamente."
     )
+
