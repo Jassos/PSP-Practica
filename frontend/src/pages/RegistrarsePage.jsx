@@ -1,52 +1,96 @@
-/**
- * REGISTRARSE
- *
- * Esta vista consume 1 endpoint principal:
- * - POST /api/auth/register
- * - Cliente sugerido: api.register({ full_name, email, password })
- *
- * Payload esperado:
- * {
- *   full_name: string,
- *   email: string,
- *   password: string
- * }
- *
- * Respuesta esperada:
- * {
- *   id: number,
- *   full_name: string,
- *   email: string,
- *   created_at: string
- * }
- *
- * Reglas visuales/funcionales de la maqueta:
- * - Card centrada con:
- *   a) Título "Registro"
- *   b) Subtítulo "Crea una nueva cuenta"
- *   c) Campos: nombre completo, correo electrónico, contraseña
- *   d) Botón principal "Registrarse"
- * - Placeholder de contraseña: "Mínimo 8 caracteres".
- *
- * Manejo de estados y errores:
- * 1) Validar formato de email en cliente.
- * 2) Validar contraseña.
- * 3) Mostrar loading en el botón durante el submit.
- * 4) Si backend responde 409, mostrar toast/error visible:
- *    "El email ya está registrado" + código HTTP_409_CONFLICT.
- * 5) En éxito, limpiar formulario y mostrar confirmación.
- *
- * HTML/JSX visual:
- * - Construir toda la maqueta dentro de <section className="visual-slot">.
- * - Incluir card, formulario, botón y contenedor de notificaciones (error/success).
- */
+import React, { useState } from "react";
+import { api } from "../api/client";
+
 export function RegistrarsePage() {
-  return (
-    <main className="panel">
-      <h2>Registrarse</h2>
-      <section className="visual-slot">
-        <p>TODO: Aquí va la interfaz visual (HTML/JSX) de registro.</p>
-      </section>
-    </main>
-  );
+const [formData, setFormData] = useState({
+full_name: "",
+email: "",
+password: ""
+});
+const [loading, setLoading] = useState(false);
+const [message, setMessage] = useState({ type: "", text: "" });
+
+const handleChange = (e) => {
+const { name, value } = e.target;
+setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
+const handleSubmit = async (e) => {
+e.preventDefault();
+setLoading(true);
+setMessage({ type: "", text: "" });
+
+try {
+  await api.register(formData);
+  setMessage({ type: "success", text: "Cuenta creada con exito. Ya puedes iniciar sesion." });
+  setFormData({ full_name: "", email: "", password: "" });
+} catch (error) {
+  let errorText = error.message;
+  if (errorText.includes("409")) {
+    errorText = "El email ya esta registrado (Error 409)";
+  }
+  setMessage({ type: "error", text: errorText });
+} finally {
+  setLoading(false);
+}
+};
+
+return (
+<main className="panel">
+<section className="visual-slot">
+<div className="card">
+<h2>Registro</h2>
+<p>Crea una nueva cuenta</p>
+
+      <form onSubmit={handleSubmit}>
+        <div className="field">
+          <label>Nombre Completo</label>
+          <input
+            type="text"
+            name="full_name"
+            value={formData.full_name}
+            onChange={handleChange}
+            required
+            placeholder="Tu nombre"
+          />
+        </div>
+
+        <div className="field">
+          <label>Correo Electronico</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder="ejemplo@correo.com"
+          />
+        </div>
+
+        <div className="field">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            placeholder="Minimo 6 caracteres"
+          />
+        </div>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Registrando..." : "Registrarse"}
+        </button>
+      </form>
+
+      {message.text && (
+        <div className={`notification ${message.type}`}>
+          {message.text}
+        </div>
+      )}
+    </div>
+  </section>
+</main>
+);
 }
