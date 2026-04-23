@@ -85,10 +85,11 @@ return (
       </form>
 
       {message.text && (
-        <div className={`notification ${message.type}`}>
-          {message.text}
-        </div>
-      )}
+       <div className={`notice-${message.type}`}>
+         {message.text}
+       </div>
+)}
+      
     </div>
   </section>
 </main>
