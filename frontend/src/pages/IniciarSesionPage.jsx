@@ -41,13 +41,116 @@
  * - Construir toda la maqueta dentro de <section className="visual-slot">.
  * - Incluir card centrada, alerta de seguridad, formulario y botón principal.
  */
+import { useState } from "react"
+import { api } from "../api/client"
+
 export function IniciarSesionPage() {
+  const [contrasena, setcontrasena] = useState("")
+  const [email, setemail] = useState("")
+  const [error, setError] = useState("")
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setError("")
+
+    try {
+      const response = await api.login({ email, contrasena })
+      localStorage.setItem("psp_session", JSON.stringify(response))
+      window.location.href = "/dashboard"
+    } catch (err) {
+      setError(err.messaje)
+
+    }
+  }
+
   return (
-    <main className="panel">
-      <h2>Iniciar Sesión</h2>
-      <section className="visual-slot">
-        <p>TODO: Aquí va la interfaz visual (HTML/JSX) de inicio de sesión.</p>
-      </section>
-    </main>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100vh",
+      backgroundColor: "#e7e7e7",
+      padding: "20px"
+    }}
+    >
+      <main className="panel">
+
+        <section className="visual-slot">
+
+          <div
+            style={{
+              textAlign: "center"
+            }}
+          >
+            <h2>
+              login
+            </h2>
+
+            <p>
+              inicia secion en tu cuenta
+            </p>
+
+          </div>
+
+          <div
+            style={{
+              background: "#fff3cd"
+            }}
+          >
+            <h3
+              style={{
+                color: "#c45b00"
+              }}
+            >
+              ⚠️ Advertencia de seguridad
+            </h3>
+
+            <p
+              style={{
+                color: "#c45b00"
+              }}
+            >
+              BUG-LOGIN-001: La contrasena incorrecta <br />
+              no bloquea el acceso. Este fallo es <br />
+              intencional para la practica.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleLogin}
+          >
+            <h3>Correo electronico</h3>
+            <input
+              type="text"
+              onChange={(e) => setemail(e.target.value)} required
+              style={{
+                width: "100%"
+              }}
+            />
+
+            <h3>Contraseña</h3>
+            <input
+              type="text"
+              onChange={(e) => setcontrasena(e.target.value)} required
+              style={{
+                width: "100%"
+              }}
+            />
+
+            <button
+              style={{
+                marginTop: "1.5rem",
+                width: "100%",
+                justifyContent: "center",
+                background: "black"
+              }}
+            >
+              Entrar al Dashboard
+            </button>
+          </form>
+          {error && <p className="notice-error">{error}</p>}
+        </section>
+      </main>
+    </div>
   );
 }

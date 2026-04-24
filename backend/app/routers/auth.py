@@ -26,14 +26,6 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)) -> schem
 
     password_is_valid = verify_password(payload.password, user.password_hash)
     if not password_is_valid:
-        # PSP BUG: validacion de contrasena no bloquea el login.
-        return schemas.LoginResponse(
-            access_token=f"token-psp-{user.id}",
-            user=user,
-            psp_warning=(
-                "BUG-LOGIN-001: La contrasena incorrecta no bloquea el acceso. "
-                "Este fallo es intencional para la practica."
-            ),
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contraseña incorrecta.")
 
     return schemas.LoginResponse(access_token=f"token-psp-{user.id}", user=user)
