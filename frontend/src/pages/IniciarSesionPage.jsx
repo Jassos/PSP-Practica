@@ -41,12 +41,101 @@
  * - Construir toda la maqueta dentro de <section className="visual-slot">.
  * - Incluir card centrada, alerta de seguridad, formulario y botón principal.
  */
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { api } from "../api/client";
+
 export function IniciarSesionPage() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    // VALIDAR CAMPOS
+    if (!email || !password) {
+      setError("Campos obligatorios");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setWarning("");
+
+      // ENVIAR LOGIN
+      const response = await api.login({ email, password });
+
+      // GUARDAR SESION
+      localStorage.setItem("psp_session", JSON.stringify(response));
+
+      // MOSTRAR WARNING PSP
+      if (response.psp_warning) {
+        setWarning(response.psp_warning);
+      }
+
+      // REDIRIGIR
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 800);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="panel">
       <h2>Iniciar Sesión</h2>
+
       <section className="visual-slot">
-        <p>TODO: Aquí va la interfaz visual (HTML/JSX) de inicio de sesión.</p>
+        <div className="card" style={{ maxWidth: "400px", margin: "auto" }}>
+          
+          <h3>Login</h3>
+
+          <form className="form-grid" onSubmit={handleSubmit}>
+
+            {/* EMAIL */}
+            <label>
+              Correo electrónico
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+
+            {/* PASSWORD */}
+            <label>
+              Contraseña
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+
+            {/* BOTON */}
+            <button type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar al Dashboard"}
+            </button>
+
+          </form>
+
+          {/* MENSAJES */}
+          {error && <p className="notice-error">{error}</p>}
+          {warning && <p className="notice-warning">{warning}</p>}
+
+        </div>
       </section>
     </main>
   );

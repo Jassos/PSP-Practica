@@ -46,12 +46,116 @@
  *   con botones de navegación/edición.
  */
 export function VerProductoPage() {
+import { useState } from "react";
+
+import { api } from "../api/client";
+
+export function VerProductoPage() {
+  const [productId, setProductId] = useState("");
+  const [product, setProduct] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+
+  async function handleLoad() {
+    if (!productId) {
+      setError("ID requerido");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setWarning("");
+      setProduct(null);
+
+      // OBTENER PRODUCTO
+      const data = await api.getProduct(productId);
+
+      setProduct(data);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="panel">
-      <h2>Ver Producto</h2>
+      <h2>Detalle de producto</h2>
+
       <section className="visual-slot">
-        <p>TODO: Aquí va la interfaz visual (HTML/JSX) para ver detalle de producto.</p>
+
+        {/* BUSCAR */}
+        <div className="inline-form">
+          <input
+            type="number"
+            placeholder="ID del producto"
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+          />
+          <button onClick={handleLoad} disabled={loading}>
+            {loading ? "Cargando..." : "Cargar"}
+          </button>
+        </div>
+
+        {/* ERRORES */}
+        {error && <p className="notice-error">{error}</p>}
+
+        {/* DETALLE */}
+        {product && (
+          <div className="card">
+
+            <h3>
+              {product.name}{" "}
+              <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                (ID: {product.id})
+              </span>
+            </h3>
+
+            {/* ESTADO */}
+            <p>
+              Estado:{" "}
+              <strong style={{ color: product.is_active ? "green" : "red" }}>
+                {product.is_active ? "Activo" : "Inactivo"}
+              </strong>
+            </p>
+
+            {/* PRECIO */}
+            <p>
+              Precio: <strong>${product.price.toFixed(2)}</strong>
+            </p>
+
+            {/* STOCK */}
+            <p>
+              Stock:{" "}
+              <strong style={{ color: product.stock <= 5 ? "red" : "inherit" }}>
+                {product.stock}
+              </strong>
+            </p>
+
+            {/* DESCRIPCION */}
+            <p>{product.description}</p>
+
+            {/* INFO */}
+            <hr />
+            <p>
+              Creado: {new Date(product.created_at).toLocaleString()}
+            </p>
+            <p>
+              Última actualización: {new Date(product.updated_at).toLocaleString()}
+            </p>
+
+            {/* WARNING PSP */}
+            {warning && <p className="notice-warning">{warning}</p>}
+
+          </div>
+        )}
+
       </section>
     </main>
   );
+}
 }
