@@ -12,7 +12,7 @@ def create_product(payload: schemas.ProductCreate, db: Session = Depends(get_db)
     created = crud.create_product(db, payload)
 
     # PSP BUG: se trunca el precio a entero.
-    created.price = int(created.price)
+    #Eliminada la linea
     db.add(created)
     db.commit()
     db.refresh(created)
@@ -53,7 +53,7 @@ def update_product(
 
     # PSP BUG: no permite modificar stock aunque el campo sea enviado.
     stock_received = "stock" in updates
-    updates.pop("stock", None)
+    
 
     updated = crud.update_product(db, product, schemas.ProductUpdate(**updates))
 
@@ -74,13 +74,8 @@ def delete_product(product_id: int, db: Session = Depends(get_db)) -> schemas.AP
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
 
     # PSP BUG: solo lo desactiva, no lo elimina realmente.
-    product.is_active = False
-    db.add(product)
-    db.commit()
+    crud.delete_product(db, product)
 
     return schemas.APIMessage(
-        message=f"Producto {product_id} eliminado (simulado).",
-        psp_warning=(
-            "BUG-DELETE-001: El endpoint realiza borrado logico pero responde como si fuera fisico."
-        ),
-    )
+    message=f"Producto {product_id} eliminado correctamente."
+)

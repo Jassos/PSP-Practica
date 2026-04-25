@@ -11,8 +11,8 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 def get_summary(db: Session = Depends(get_db)) -> schemas.DashboardSummary:
     summary = crud.dashboard_summary(db)
 
-    # PSP BUG: products_total se reporta usando solo activos.
-    summary["products_total"] = summary["active_products"]
+    # PSP BUG: LINEA ELIMINADA products_total se reporta usando solo activos.
+    
 
     return schemas.DashboardSummary(
         **summary,
