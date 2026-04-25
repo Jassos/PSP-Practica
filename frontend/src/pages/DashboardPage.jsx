@@ -43,7 +43,7 @@ export function DashboardPage() {
     setStockWarning("");
     try {
       const response = await api.dashboardStockAlerts();
-      setStockData(response.items || []);
+      setStockData(Array.isArray(response) ? response : response.items || []);
       if (response.psp_warning) setStockWarning(response.psp_warning);
     } catch (error) {
       setStockError(error.message);
@@ -58,7 +58,7 @@ export function DashboardPage() {
     setRecentWarning("");
     try {
       const response = await api.dashboardRecentProducts();
-      setRecentData(response.items || []);
+      setRecentData(Array.isArray(response) ? response : response.items || []);
       if (response.psp_warning) setRecentWarning(response.psp_warning);
     } catch (error) {
       setRecentError(error.message);
@@ -166,8 +166,8 @@ export function DashboardPage() {
                     </tr>
                   ) : (
                     stockData.map((item) => (
-                      <tr key={item.product_id}>
-                        <td>{item.product_name}</td>
+                      <tr key={item.id}>
+                        <td>{item.name}</td>
                         <td>
                           <span style={{ background: "#fbcf33", color: "#8a4f13", padding: "0.2rem 0.5rem", borderRadius: "4px", fontWeight: "bold", fontSize: "0.85rem" }}>
                             {item.stock} un.
@@ -175,7 +175,7 @@ export function DashboardPage() {
                         </td>
                         <td>
                           <span style={{ background: "#101b2f", color: "#fff", padding: "0.2rem 0.5rem", borderRadius: "4px", fontSize: "0.85rem" }}>
-                            {item.status}
+                            {item.is_active ? "Activo" : "Inactivo"}
                           </span>
                         </td>
                       </tr>
@@ -216,8 +216,8 @@ export function DashboardPage() {
                     </tr>
                   ) : (
                     recentData.map((item) => (
-                      <tr key={item.product_id}>
-                        <td>{item.product_name}</td>
+                      <tr key={item.id}>
+                        <td>{item.name}</td>
                         <td>${item.price}</td>
                         <td>{formatDate(item.created_at)}</td>
                       </tr>
